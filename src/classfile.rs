@@ -183,9 +183,9 @@ impl ClassFile {
 
         match self.constant_pool.get(class_name_index) {
             Some(ConstantPoolTag::Class { name_index, .. }) => match self.constant_pool.get(*name_index as usize) {
-                Some(ConstantPoolTag::Utf8 { bytes, .. }) => String::from_utf8_lossy(bytes)
-                    .parse::<String>()
-                    .unwrap_or_else(|_| EMPTY_STRING),
+                Some(ConstantPoolTag::Utf8 { bytes, .. }) => {
+                    String::from_utf8_lossy(bytes).parse::<String>().unwrap_or(EMPTY_STRING)
+                }
                 Some(other) => format!(
                     "<Error while accessing {} - expected ConstantPoolTag::Utf8 at index {}, got {} instead>",
                     class_cp_field_name, name_index, other

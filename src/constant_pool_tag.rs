@@ -146,7 +146,7 @@ impl ConstantPoolTag {
     ) -> String {
         let visited_entries = visited_entries.unwrap_or_default();
         match string {
-            ConstantPoolTag::Utf8 { _value, .. } => String::from(_value),
+            ConstantPoolTag::Utf8 { _value, .. } => _value,
             ConstantPoolTag::String { string_index, .. } => {
                 if visited_entries.contains(&string_index) {
                     return "".to_string();
