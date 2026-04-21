@@ -1,20 +1,19 @@
-use crate::signature_parser::parse_jvm_descriptor;
-
-macro_rules! descriptor_transform_tests {
-    ($($name:ident: ($descriptor:expr, $signature:expr),)*) => {
-        $(
-        #[test]
-        fn $name() {
-            let signature = parse_jvm_descriptor($descriptor).unwrap().to_string();
-            assert_eq!(signature, $signature);
-        }
-        )*
-    };
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::signature_parser::parse_jvm_descriptor;
+
+    macro_rules! descriptor_transform_tests {
+        ($($name:ident: ($descriptor:expr, $signature:expr),)*) => {
+            $(
+            #[test]
+            fn $name() {
+                let signature = parse_jvm_descriptor($descriptor).unwrap().to_string();
+                assert_eq!(signature, $signature);
+            }
+            )*
+        };
+    }
+
     descriptor_transform_tests! {
         simple_test: ("([Ljava/lang/String;[IZ[V)V", "void (java.lang.String[], int[], boolean, void[])"),
     }
