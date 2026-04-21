@@ -21,7 +21,7 @@ pub struct ExceptionTableEntry {
 }
 
 impl ExceptionTableEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.start_pc)?;
         buff.write_u16::<BigEndian>(self.end_pc)?;
         buff.write_u16::<BigEndian>(self.handler_pc)?;
@@ -42,7 +42,7 @@ pub struct LineNumberEntry {
 }
 
 impl LineNumberEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.start_pc)?;
         buff.write_u16::<BigEndian>(self.line_number)?;
         Ok(size_of::<u16>() + size_of::<u16>())
@@ -67,7 +67,7 @@ pub struct LocalVariableTableEntry {
 }
 
 impl LocalVariableTableEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.start_pc)?;
         buff.write_u16::<BigEndian>(self.length)?;
         buff.write_u16::<BigEndian>(self.name_index)?;
@@ -95,7 +95,7 @@ pub struct LocalVariableTypeTableEntry {
 }
 
 impl LocalVariableTypeTableEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.start_pc)?;
         buff.write_u16::<BigEndian>(self.length)?;
         buff.write_u16::<BigEndian>(self.name_index)?;
@@ -119,7 +119,7 @@ pub struct BootstrapMethodEntry {
 }
 
 impl BootstrapMethodEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.bootstrap_method_ref)?;
         buff.write_u16::<BigEndian>(self.num_bootstrap_arguments)?;
         let mut bytes_written = size_of::<u16>() + size_of::<u16>();
@@ -144,7 +144,7 @@ pub struct InnerClassEntry {
 }
 
 impl InnerClassEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.inner_class_info_index)?;
         buff.write_u16::<BigEndian>(self.outer_class_info_index)?;
         buff.write_u16::<BigEndian>(self.inner_name_index)?;
@@ -170,7 +170,7 @@ pub struct RecordComponentInfo {
 }
 
 impl RecordComponentInfo {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.name_index)?;
         buff.write_u16::<BigEndian>(self.descriptor_index)?;
         buff.write_u16::<BigEndian>(self.attributes_count)?;
@@ -199,7 +199,7 @@ pub struct Annotation {
 }
 
 impl Annotation {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.type_index)?;
         buff.write_u16::<BigEndian>(self.num_element_value_pairs)?;
         let mut bytes_written = size_of::<u16>() + size_of::<u16>();
@@ -222,7 +222,7 @@ pub struct ElementValuePair {
 }
 
 impl ElementValuePair {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         let mut bytes_written = 0;
         buff.write_u16::<BigEndian>(self.element_name_index)?;
         bytes_written += size_of::<u16>();
@@ -258,7 +258,7 @@ pub struct ElementValue {
 }
 
 impl ElementValue {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         let mut bytes_written = 0;
         buff.write_u8(self.tag)?;
         bytes_written += size_of::<u8>();
@@ -322,7 +322,7 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         match self {
             Value::ConstValueIndex { const_value_index } => {
                 buff.write_u16::<BigEndian>(const_value_index)?;
@@ -365,7 +365,7 @@ pub struct Parameter {
 }
 
 impl Parameter {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.name_index)?;
         buff.write_u16::<BigEndian>(self.access_flags.into())?;
         Ok(size_of::<u16>() + size_of::<u16>())
@@ -413,7 +413,7 @@ pub struct ParameterAnnotation {
 }
 
 impl ParameterAnnotation {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.num_annotations)?;
         let mut bytes_written = size_of::<u16>();
         for one_ann in self.annotations {
@@ -442,7 +442,7 @@ pub struct TypeAnnotation {
 }
 
 impl TypeAnnotation {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         let mut bytes_written = 0;
         buff.write_u8(self.target_type)?;
         bytes_written += size_of::<u8>();
@@ -474,7 +474,7 @@ pub struct PathEntry {
 }
 
 impl PathEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u8(self.type_path_kind)?;
         buff.write_u8(self.type_argument_index)?;
         Ok(size_of::<u8>() + size_of::<u8>())
@@ -496,7 +496,7 @@ pub struct TypePath {
 }
 
 impl TypePath {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         let mut bytes_written = 0;
         buff.write_u8(self.path_length)?;
         bytes_written += size_of::<u8>();
@@ -551,7 +551,7 @@ pub enum TargetInfo {
 }
 
 impl TargetInfo {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         match self {
             TargetInfo::TypeParameterTarget { type_parameter_index } => {
                 buff.write_u8(type_parameter_index)?;
@@ -623,7 +623,7 @@ pub struct LocalvarTargetTableEntry {
 }
 
 impl LocalvarTargetTableEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.start_pc)?;
         buff.write_u16::<BigEndian>(self.length)?;
         buff.write_u16::<BigEndian>(self.index)?;
@@ -687,7 +687,7 @@ pub struct RequiresEntry {
 }
 
 impl RequiresEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.requires_index)?;
         buff.write_u16::<BigEndian>(self.requires_flags)?;
         buff.write_u16::<BigEndian>(self.requires_version_index)?;
@@ -711,7 +711,7 @@ pub struct ExportsEntry {
 }
 
 impl ExportsEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.exports_index)?;
         buff.write_u16::<BigEndian>(self.exports_flags)?;
         buff.write_u16::<BigEndian>(self.exports_to_count)?;
@@ -735,7 +735,7 @@ pub struct OpensEntry {
 }
 
 impl OpensEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.opens_index)?;
         buff.write_u16::<BigEndian>(self.opens_flags)?;
         buff.write_u16::<BigEndian>(self.opens_to_count)?;
@@ -758,7 +758,7 @@ pub struct ProvidesEntry {
 }
 
 impl ProvidesEntry {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         buff.write_u16::<BigEndian>(self.provides_index)?;
         buff.write_u16::<BigEndian>(self.provides_with_count)?;
         Ok(size_of::<u16>() + size_of::<u16>())
@@ -799,7 +799,7 @@ pub enum VerificationTypeInfo {
 }
 
 impl VerificationTypeInfo {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         match self {
             VerificationTypeInfo::TopVariableInfo { tag } => {
                 buff.write_u8(tag as u8)?;
@@ -957,7 +957,7 @@ pub enum StackMapFrame {
 }
 
 impl StackMapFrame {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         match self {
             StackMapFrame::SameFrame { frame_type } => {
                 buff.write_u8(frame_type)?;
@@ -1271,7 +1271,7 @@ pub enum Attribute {
 }
 
 impl Attribute {
-    pub fn write(self, mut buff: &mut [u8]) -> Result<usize, Error> {
+    pub fn write(self, mut buff: &mut Vec<u8>) -> Result<usize, Error> {
         match self {
             Attribute::ConstantValue {
                 attribute_name_index,
@@ -1740,7 +1740,7 @@ impl Attribute {
     }
 }
 
-fn write_vec_u16_as_bytes(vec: &[type_alias::u2], mut buff: &mut [u8]) -> Result<usize, Error> {
+fn write_vec_u16_as_bytes(vec: &[type_alias::u2], mut buff: &mut Vec<u8>) -> Result<usize, Error> {
     unsafe {
         buff.write(
             vec.iter()
