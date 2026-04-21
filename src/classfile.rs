@@ -1,4 +1,4 @@
-use std::fmt::{format, Debug, Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::string::String;
 
 use crate::access_flags::{AccessFlagContext, AccessFlags};
@@ -7,7 +7,7 @@ use crate::constant_pool_tag::ConstantPoolTag;
 use crate::field::Field;
 use crate::method::Method;
 use crate::mutf8::read_modified_utf8;
-use crate::signature_parser::{parse_jvm_descriptor, parse_object_or_array_descriptor};
+use crate::signature_parser::parse_jvm_descriptor;
 use crate::type_alias;
 use indoc::indoc;
 

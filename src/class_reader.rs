@@ -383,13 +383,13 @@ impl ClassFile {
                         "expected Utf8 tag at index {} in constant pool, got {}",
                         attribute_name_index, e
                     ),
-                ))
+                ));
             }
             None => {
                 return Err(Error::new(
                     ErrorKind::NotFound,
                     format!("nothing found at index {} in constant pool", attribute_name_index),
-                ))
+                ));
             }
         };
         #[cfg(feature = "debug-logging")]
@@ -793,7 +793,9 @@ impl ClassFile {
             "RuntimeVisibleParameterAnnotations" | "RuntimeInvisibleParameterAnnotations" => {
                 #[cfg(feature = "debug-logging")]
                 {
-                    println!("    Reading RuntimeVisibleParameterAnnotations or RuntimeInvisibleParameterAnnotations attribute");
+                    println!(
+                        "    Reading RuntimeVisibleParameterAnnotations or RuntimeInvisibleParameterAnnotations attribute"
+                    );
                 }
                 let num_parameters = buff.read_u8()?;
                 let mut parameter_annotations: Vec<ParameterAnnotation> = Vec::with_capacity(num_parameters as usize);
@@ -1169,7 +1171,7 @@ impl ClassFile {
                     return Err(Error::new(
                         ErrorKind::InvalidInput,
                         format!("unknown annotation element value tag: {tag}"),
-                    ))
+                    ));
                 }
             },
         })

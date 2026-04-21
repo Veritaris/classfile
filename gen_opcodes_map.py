@@ -2,12 +2,12 @@ import dataclasses
 import functools
 import inspect
 import re
-import sys
 import typing
 import urllib.request
-from bs4 import BeautifulSoup
 from pathlib import Path
 
+import sys
+from bs4 import BeautifulSoup
 
 DEFAULT_JVM_SPEC_VERSION: typing.Final = 25
 
@@ -62,11 +62,12 @@ class Opcode:
         opname: \"{self.opname}\",
         oplen: {self.oplen},
     }}"""
-    
+
     @property
     @functools.lru_cache(maxsize=None)
     def rs_const(self) -> str:
         return f"{tab}pub const {self.opname.upper()}: Opcode = {self.rs_code};"
+
 
 def download_jvm_opcodes_spec(jvm_version: int) -> str:
     req = urllib.request.urlopen(
@@ -176,7 +177,8 @@ def gen_opcodes_rs(spec_version: int):
     with lib_rs_file.open(mode="w") as f:
         for line in lib_rs:
             f.write(line)
-    
+
+
 if __name__ == "__main__":
     args = sys.argv
     jvm_spec_version: int = DEFAULT_JVM_SPEC_VERSION
@@ -189,5 +191,5 @@ if __name__ == "__main__":
                 f"Passed wrong jvm spec version - expected number 0..{DEFAULT_JVM_SPEC_VERSION}, got '{args[1]}'. "
                 f"Falling back to default jvm spec version={DEFAULT_JVM_SPEC_VERSION}"
             )
-    
+
     gen_opcodes_rs(jvm_spec_version)

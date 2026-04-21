@@ -8,6 +8,6 @@ pub mod field;
 pub mod method;
 pub mod mutf8;
 pub mod opcodes;
-pub mod type_alias;
 pub mod signature_parser;
 mod test_signature_parser;
+pub mod type_alias;
