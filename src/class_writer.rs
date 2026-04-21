@@ -13,7 +13,7 @@ impl ClassFile {
         writer: &mut ZipWriter<BufWriter<File>>,
         filename: &str,
         compress_level: i64,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         writer.start_file(
             filename,
             SimpleFileOptions::default()
@@ -21,8 +21,8 @@ impl ClassFile {
                 .compression_level(Some(compress_level)),
         )?;
         let data: Vec<u8> = self.try_into()?;
-        let _ = writer.write(data.as_slice())?;
-        Ok(())
+        let bytes_written = writer.write(data.as_slice())?;
+        Ok(bytes_written)
     }
 }
 

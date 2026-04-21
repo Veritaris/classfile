@@ -12,123 +12,6 @@ use crate::mutf8::read_modified_utf8;
 use crate::type_alias;
 
 impl ClassFile {
-    pub fn tag_to_display(&self, tag: &ConstantPoolTag) -> String {
-        match tag {
-            ConstantPoolTag::Utf8 { bytes, length, .. } => {
-                let bytes_stringified = match read_modified_utf8(bytes) {
-                    Ok(res) => res,
-                    Err(err) => {
-                        eprintln!("[TagDisplayError]: err={}, raw data: {:?}", err, bytes);
-                        String::from("<error>")
-                    }
-                };
-                format!(
-                    "Utf8<length={}, bytes='{:?}', stringified='{}'>",
-                    length,
-                    bytes.clone(),
-                    bytes_stringified.clone()
-                )
-            }
-            ConstantPoolTag::Integer { _value, .. } => {
-                format!("Integer<value={}>", _value)
-            }
-            ConstantPoolTag::Float { _value, .. } => {
-                format!("Float<value={}>", _value)
-            }
-            ConstantPoolTag::Long { _value, .. } => {
-                format!("Long<value={}>", _value)
-            }
-            ConstantPoolTag::Double { _value, .. } => {
-                format!("Double<value={}>", _value)
-            }
-            ConstantPoolTag::Class { name_index, .. } => {
-                let val = self.constant_pool.get(*name_index as usize).unwrap();
-                format!("Class<name_index={}, content={}>", name_index, self.tag_to_display(val))
-            }
-            ConstantPoolTag::String { string_index, .. } => {
-                let val = self.constant_pool.get(*string_index as usize).unwrap();
-                format!(
-                    "String<string_index={}, content={}>",
-                    string_index,
-                    self.tag_to_display(val)
-                )
-            }
-            ConstantPoolTag::Fieldref {
-                class_index,
-                name_and_type_index,
-                ..
-            } => {
-                let class = self.constant_pool.get(*class_index as usize).unwrap();
-                let name_and_type = self.constant_pool.get(*name_and_type_index as usize).unwrap();
-                format!(
-                    "FieldRef<class={}, name_and_type={}>",
-                    self.tag_to_display(class),
-                    self.tag_to_display(name_and_type)
-                )
-            }
-            ConstantPoolTag::Methodref {
-                class_index,
-                name_and_type_index,
-                ..
-            } => {
-                let class = self.constant_pool.get(*class_index as usize).unwrap();
-                let name_and_type = self.constant_pool.get(*name_and_type_index as usize).unwrap();
-                format!(
-                    "MethodRef<class={}, name_and_type={}>",
-                    self.tag_to_display(class),
-                    self.tag_to_display(name_and_type)
-                )
-            }
-            ConstantPoolTag::InterfaceMethodref {
-                class_index,
-                name_and_type_index,
-                ..
-            } => {
-                let class = self.constant_pool.get(*class_index as usize).unwrap();
-                let name_and_type = self.constant_pool.get(*name_and_type_index as usize).unwrap();
-                format!(
-                    "InterfaceMethodRef<class={}, name_and_type={}>",
-                    self.tag_to_display(class),
-                    self.tag_to_display(name_and_type)
-                )
-            }
-            ConstantPoolTag::NameAndType {
-                name_index,
-                descriptor_index,
-                ..
-            } => {
-                let name = self.constant_pool.get(*name_index as usize).unwrap();
-                let descriptor = self.constant_pool.get(*descriptor_index as usize).unwrap();
-                format!(
-                    "NameAndType<name={}, descriptor={}>",
-                    self.tag_to_display(name),
-                    self.tag_to_display(descriptor)
-                )
-            }
-            ConstantPoolTag::MethodHandle { .. } => String::from("MethodHandle<TODO>"),
-            ConstantPoolTag::MethodType { .. } => String::from("MethodType<TODO>"),
-            ConstantPoolTag::Dynamic { .. } => String::from("Dynamic<TODO>"),
-            ConstantPoolTag::InvokeDynamic { .. } => String::from("InvokeDynamic<TODO>"),
-            ConstantPoolTag::Module { name_index, .. } => {
-                format!("Module<name={}>", self.get_string_from_cpool(*name_index))
-            }
-            ConstantPoolTag::Package { name_index, .. } => {
-                format!("Module<name={}>", self.get_string_from_cpool(*name_index))
-            }
-            ConstantPoolTag::ContinuationTag { .. } => String::from("ContinuationTag"),
-        }
-    }
-
-    pub fn class_name_from_cp(&self) -> String {
-        match self.constant_pool.get(self.this_class as usize) {
-            Some(ConstantPoolTag::Class { name_index, .. }) => match self.constant_pool.get(*name_index as usize) {
-                Some(ConstantPoolTag::Utf8 { bytes, .. }) => String::from_utf8(bytes.clone()).unwrap(),
-                _ => String::new(),
-            },
-            _ => String::new(),
-        }
-    }
-
     pub fn read<R>(mut buff: BufReader<R>, mappings: Option<&LinkedHashMap<String, String>>) -> Result<ClassFile, Error>
     where
         R: Read + Seek,
@@ -1355,7 +1238,7 @@ impl ClassFile {
                         String::new()
                     }
                 };
-
+                // todo(Veritaris): remove remapping here
                 if value_read_correctly {
                     match mappings {
                         None => {}
@@ -1539,7 +1422,7 @@ impl ClassFile {
 
             ConstantPoolJvmTag::INVALID => Err(Error::new(
                 ErrorKind::InvalidInput,
-                format!("tag {} not implemented!", tag_byte),
+                format!("tag {} is invalid for jvm!", tag_byte),
             )),
         }
     }

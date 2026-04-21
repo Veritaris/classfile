@@ -25,7 +25,7 @@ pub const CONTINUATION_TAG: ConstantPoolTag = ConstantPoolTag::ContinuationTag {
 /// Package                     20  53.0    9
 /// ```
 ///
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub enum ConstantPoolTag {
     ContinuationTag {
         tag: type_alias::u1,
@@ -146,7 +146,7 @@ impl ConstantPoolTag {
     ) -> String {
         let visited_entries = visited_entries.unwrap_or_default();
         match string {
-            ConstantPoolTag::Utf8 { _value, .. } => _value,
+            ConstantPoolTag::Utf8 { _value, .. } => String::from(_value),
             ConstantPoolTag::String { string_index, .. } => {
                 if visited_entries.contains(&string_index) {
                     return "".to_string();
@@ -363,7 +363,7 @@ impl Display for ConstantPoolTag {
     }
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum ConstantPoolJvmTag {
     INVALID = 0,
     Utf8 = 1,
