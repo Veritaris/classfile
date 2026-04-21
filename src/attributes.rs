@@ -1,8 +1,10 @@
+use std::fmt::{Debug, Display, Formatter};
 use std::io::{BufReader, Error, ErrorKind, Read, Write};
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::access_flags::AccessFlags;
+use crate::opcodes::OPCODES_MAP;
 use crate::type_alias;
 
 ///```javadoc
@@ -1044,7 +1046,188 @@ impl StackMapFrame {
     }
 }
 
-#[derive(Clone, Debug)]
+impl Debug for Attribute {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{}", self))?;
+        Ok(())
+    }
+}
+
+impl Display for Attribute {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Attribute::Code { code, .. } => {
+                let mut code_iter = code.iter();
+                while let Some(&opcode_byte) = code_iter.next() {
+                    if let Some(opcode) = OPCODES_MAP[opcode_byte as usize] {
+                        let mut opcode_line = String::new();
+                        opcode_line.push_str(opcode.opname);
+                        for _ in 0..(opcode.oplen - 1) {
+                            if let Some(opcode_param) = code_iter.next() {
+                                opcode_line.push_str(format!(" {}", opcode_param).as_str());
+                            }
+                        }
+                        opcode_line.push('\n');
+                        f.write_str(opcode_line.as_str())?;
+                    }
+                }
+            }
+            Attribute::ConstantValue {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::StackMapTable {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::Exceptions {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::InnerClasses {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::EnclosingMethod {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::Synthetic {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::Signature {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::SourceFile {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::SourceDebugExtension {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::LineNumberTable {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::LocalVariableTable {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::LocalVariableTypeTable {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::Deprecated {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::RuntimeVisibleAnnotations {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::RuntimeInvisibleAnnotations {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::RuntimeVisibleParameterAnnotations {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::RuntimeInvisibleParameterAnnotations {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::RuntimeVisibleTypeAnnotations {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::RuntimeInvisibleTypeAnnotations {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::AnnotationDefault {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::BootstrapMethods {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::MethodParameters {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::Module {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::ModulePackages {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::ModuleMainClass {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::NestHost {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::NestMembers {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::Record {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::PermittedSubclasses {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+            Attribute::ExternalAttribute {
+                attribute_name_index, ..
+            } => {
+                f.write_fmt(format_args!("{}", attribute_name_index))?;
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone)]
 pub enum Attribute {
     /// Oracle docs: https://docs.oracle.com/javase/specs/jvms/se22/html/jvms-4.html#jvms-4.7.2
     ConstantValue {

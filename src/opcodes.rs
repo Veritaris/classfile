@@ -4,6 +4,7 @@
 #[non_exhaustive]
 pub struct Opcodes;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Opcode {
     pub opcode: u8,
     pub opname: &'static str,

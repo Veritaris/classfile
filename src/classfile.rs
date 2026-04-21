@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{format, Debug, Display, Formatter};
 use std::string::String;
 
 use crate::access_flags::{AccessFlagContext, AccessFlags};
@@ -7,6 +7,7 @@ use crate::constant_pool_tag::ConstantPoolTag;
 use crate::field::Field;
 use crate::method::Method;
 use crate::mutf8::read_modified_utf8;
+use crate::signature_parser::{parse_jvm_descriptor, parse_object_or_array_descriptor};
 use crate::type_alias;
 use indoc::indoc;
 
@@ -262,23 +263,42 @@ impl Display for ClassFile {
             .fields
             .iter()
             .map(|f| {
+                let field_signature = parse_jvm_descriptor(self.get_string_from_cpool(f.descriptor_index).as_str())
+                    .unwrap()
+                    .to_string();
                 format!(
-                    "{} {}",
+                    "{} {} {}",
                     AccessFlags::from((AccessFlagContext::Field, f.access_flags)).as_string(),
-                    self.get_string_from_cpool(f.name_index)
+                    field_signature.trim(),
+                    self.get_string_from_cpool(f.name_index).trim()
                 )
+                .trim()
+                .to_string()
             })
             .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
         let methods = self
             .methods
             .iter()
-            .map(|m| {
-                format!(
+            .flat_map(|m| {
+                let method_signature = parse_jvm_descriptor(self.get_string_from_cpool(m.descriptor_index).as_str())
+                    .unwrap()
+                    .to_string();
+                let method_repr = format!(
                     "{} {} {}",
                     AccessFlags::from((AccessFlagContext::Field, m.access_flags)).as_string(),
-                    self.get_string_from_cpool(m.name_index),
-                    self.get_string_from_cpool(m.descriptor_index),
+                    self.get_string_from_cpool(m.name_index).trim(),
+                    method_signature.trim(),
                 )
+                .trim()
+                .to_string();
+                let method_attributes = m
+                    .attributes
+                    .iter()
+                    .map(|attr| format!("  {:#?}", attr))
+                    .collect::<Vec<String>>();
+                let mut method_info: Vec<String> = vec![method_repr];
+                method_info.extend(method_attributes);
+                method_info
             })
             .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
         let attributes = self
