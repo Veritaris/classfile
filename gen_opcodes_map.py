@@ -2,9 +2,8 @@ import dataclasses
 import inspect
 import re
 import urllib.request
-from pathlib import Path
-
 from bs4 import BeautifulSoup
+from pathlib import Path
 
 cache_path = Path("./java_opcodes.html")
 opcodes_rs_file = Path("./src/opcodes.rs")

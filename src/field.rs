@@ -21,7 +21,7 @@ impl Field {
 
         for attr in self.attributes {
             let bytes: Vec<u8> = attr.try_into()?;
-            buff.write(bytes.as_slice())?;
+            let _ = buff.write(bytes.as_slice())?;
         }
         Ok(())
     }
@@ -40,7 +40,7 @@ impl TryInto<Vec<u8>> for Field {
 
         for attr in self.attributes {
             let bytes: Vec<u8> = attr.try_into()?;
-            output_bytes.write(bytes.as_slice())?;
+            let _ = output_bytes.write(bytes.as_slice())?;
         }
 
         Ok(output_bytes)

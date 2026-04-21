@@ -53,9 +53,7 @@ impl ClassFile {
     pub fn get_string_from_cpool(&self, index: u16) -> String {
         match self.constant_pool.get(index as usize).unwrap() {
             ConstantPoolTag::Utf8 { _value, .. } => _value.clone(),
-            ConstantPoolTag::String { string_index, .. } => {
-                self.get_string_from_cpool(*string_index)
-            }
+            ConstantPoolTag::String { string_index, .. } => self.get_string_from_cpool(*string_index),
             _ => String::new(),
         }
     }
@@ -73,30 +71,22 @@ impl Debug for ClassFile {
             .enumerate()
             .skip(1)
             .map(|(index, entry)| format!("{} {}", index, self.tag_to_display(entry)))
-            .fold(String::from("        "), |acc, e| {
-                acc + "\n        " + e.as_str()
-            });
+            .fold(String::from("        "), |acc, e| acc + "\n        " + e.as_str());
 
         let interfaces = self
             .interfaces
             .iter()
-            .map(
-                |class_index| match self.constant_pool.get(*class_index as usize) {
-                    Some(class_info) => match class_info {
-                        ConstantPoolTag::Class { name_index, .. } => {
-                            self.get_string_from_cpool(*name_index)
-                        }
-                        _ => panic!(
-                            "expected Class_info found at index {} in constant pool: got {}",
-                            class_index, class_info
-                        ),
-                    },
-                    None => panic!("nothing found at index {} in constant pool", class_index),
+            .map(|class_index| match self.constant_pool.get(*class_index as usize) {
+                Some(class_info) => match class_info {
+                    ConstantPoolTag::Class { name_index, .. } => self.get_string_from_cpool(*name_index),
+                    _ => panic!(
+                        "expected Class_info found at index {} in constant pool: got {}",
+                        class_index, class_info
+                    ),
                 },
-            )
-            .fold(String::from("        "), |acc, e| {
-                acc + "\n        " + e.as_str()
-            });
+                None => panic!("nothing found at index {} in constant pool", class_index),
+            })
+            .fold(String::from("        "), |acc, e| acc + "\n        " + e.as_str());
 
         let fields = self
             .fields
@@ -108,9 +98,7 @@ impl Debug for ClassFile {
                     self.get_string_from_cpool(f.name_index)
                 )
             })
-            .fold(String::from("        "), |acc, f| {
-                acc + "\n        " + f.as_str()
-            });
+            .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
         let methods = self
             .methods
             .iter()
@@ -122,16 +110,12 @@ impl Debug for ClassFile {
                     self.get_string_from_cpool(m.descriptor_index),
                 )
             })
-            .fold(String::from("        "), |acc, f| {
-                acc + "\n        " + f.as_str()
-            });
+            .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
         let attributes = self
             .attributes
             .iter()
             .map(|attr| format!("{:?}", attr))
-            .fold(String::from("        "), |acc, f| {
-                acc + "\n        " + f.as_str()
-            });
+            .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
 
         f.write_str(
             format!(
@@ -186,37 +170,27 @@ impl Debug for ClassFile {
 impl Display for ClassFile {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let class_name = match self.constant_pool.get(self.this_class as usize) {
-            Some(ConstantPoolTag::Class { name_index, .. }) => {
-                match self.constant_pool.get(*name_index as usize) {
-                    Some(ConstantPoolTag::Utf8 { bytes, .. }) => {
-                        String::from_utf8(bytes.clone()).unwrap()
-                    }
-                    _ => panic!("pizdec"),
-                }
-            }
+            Some(ConstantPoolTag::Class { name_index, .. }) => match self.constant_pool.get(*name_index as usize) {
+                Some(ConstantPoolTag::Utf8 { bytes, .. }) => String::from_utf8(bytes.clone()).unwrap(),
+                _ => panic!("pizdec"),
+            },
             _ => panic!("pizdec x2"),
         };
 
         let interfaces = self
             .interfaces
             .iter()
-            .map(
-                |class_index| match self.constant_pool.get(*class_index as usize) {
-                    Some(class_info) => match class_info {
-                        ConstantPoolTag::Class { name_index, .. } => {
-                            self.get_string_from_cpool(*name_index)
-                        }
-                        _ => panic!(
-                            "expected Class_info found at index {} in constant pool: got {}",
-                            class_index, class_info
-                        ),
-                    },
-                    None => panic!("nothing found at index {} in constant pool", class_index),
+            .map(|class_index| match self.constant_pool.get(*class_index as usize) {
+                Some(class_info) => match class_info {
+                    ConstantPoolTag::Class { name_index, .. } => self.get_string_from_cpool(*name_index),
+                    _ => panic!(
+                        "expected Class_info found at index {} in constant pool: got {}",
+                        class_index, class_info
+                    ),
                 },
-            )
-            .fold(String::from("        "), |acc, e| {
-                acc + "\n        " + e.as_str()
-            });
+                None => panic!("nothing found at index {} in constant pool", class_index),
+            })
+            .fold(String::from("        "), |acc, e| acc + "\n        " + e.as_str());
 
         let fields = self
             .fields
@@ -228,9 +202,7 @@ impl Display for ClassFile {
                     self.get_string_from_cpool(f.name_index)
                 )
             })
-            .fold(String::from("        "), |acc, f| {
-                acc + "\n        " + f.as_str()
-            });
+            .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
         let methods = self
             .methods
             .iter()
@@ -242,16 +214,12 @@ impl Display for ClassFile {
                     self.get_string_from_cpool(m.descriptor_index),
                 )
             })
-            .fold(String::from("        "), |acc, f| {
-                acc + "\n        " + f.as_str()
-            });
+            .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
         let attributes = self
             .attributes
             .iter()
             .map(|attr| format!("{:?}", attr))
-            .fold(String::from("        "), |acc, f| {
-                acc + "\n        " + f.as_str()
-            });
+            .fold(String::from("        "), |acc, f| acc + "\n        " + f.as_str());
 
         f.write_str(
             format!(
@@ -277,9 +245,7 @@ impl Display for ClassFile {
                 match self.constant_pool.get(self.super_class as usize) {
                     Some(ConstantPoolTag::Class { name_index, .. }) => {
                         match self.constant_pool.get(*name_index as usize) {
-                            Some(ConstantPoolTag::Utf8 { bytes, .. }) => {
-                                String::from_utf8(bytes.clone()).unwrap()
-                            }
+                            Some(ConstantPoolTag::Utf8 { bytes, .. }) => String::from_utf8(bytes.clone()).unwrap(),
                             _ => panic!("pizdec"),
                         }
                     }

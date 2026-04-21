@@ -46,11 +46,7 @@ where
             }
             ConstantPoolTag::Class { name_index, .. } => {
                 let val = self.constant_pool.get(*name_index as usize).unwrap();
-                format!(
-                    "Class<name_index={}, content={}>",
-                    name_index,
-                    self.tag_to_display(val)
-                )
+                format!("Class<name_index={}, content={}>", name_index, self.tag_to_display(val))
             }
             ConstantPoolTag::String { string_index, .. } => {
                 let val = self.constant_pool.get(*string_index as usize).unwrap();
@@ -66,10 +62,7 @@ where
                 ..
             } => {
                 let class = self.constant_pool.get(*class_index as usize).unwrap();
-                let name_and_type = self
-                    .constant_pool
-                    .get(*name_and_type_index as usize)
-                    .unwrap();
+                let name_and_type = self.constant_pool.get(*name_and_type_index as usize).unwrap();
                 format!(
                     "FieldRef<class={}, name_and_type={}>",
                     self.tag_to_display(class),
@@ -82,10 +75,7 @@ where
                 ..
             } => {
                 let class = self.constant_pool.get(*class_index as usize).unwrap();
-                let name_and_type = self
-                    .constant_pool
-                    .get(*name_and_type_index as usize)
-                    .unwrap();
+                let name_and_type = self.constant_pool.get(*name_and_type_index as usize).unwrap();
                 format!(
                     "MethodRef<class={}, name_and_type={}>",
                     self.tag_to_display(class),
@@ -98,10 +88,7 @@ where
                 ..
             } => {
                 let class = self.constant_pool.get(*class_index as usize).unwrap();
-                let name_and_type = self
-                    .constant_pool
-                    .get(*name_and_type_index as usize)
-                    .unwrap();
+                let name_and_type = self.constant_pool.get(*name_and_type_index as usize).unwrap();
                 format!(
                     "InterfaceMethodRef<class={}, name_and_type={}>",
                     self.tag_to_display(class),
@@ -137,22 +124,15 @@ where
 
     pub fn class_name_from_cp(&self) -> String {
         match self.constant_pool.get(self.this_class as usize) {
-            Some(ConstantPoolTag::Class { name_index, .. }) => {
-                match self.constant_pool.get(*name_index as usize) {
-                    Some(ConstantPoolTag::Utf8 { bytes, .. }) => {
-                        String::from_utf8(bytes.clone()).unwrap()
-                    }
-                    _ => String::new(),
-                }
-            }
+            Some(ConstantPoolTag::Class { name_index, .. }) => match self.constant_pool.get(*name_index as usize) {
+                Some(ConstantPoolTag::Utf8 { bytes, .. }) => String::from_utf8(bytes.clone()).unwrap(),
+                _ => String::new(),
+            },
             _ => String::new(),
         }
     }
 
-    pub fn read<R>(
-        mut buff: BufReader<R>,
-        mappings: Option<&LinkedHashMap<String, String>>,
-    ) -> Result<ClassFile, Error>
+    pub fn read<R>(mut buff: BufReader<R>, mappings: Option<&LinkedHashMap<String, String>>) -> Result<ClassFile, Error>
     where
         R: Read + Seek,
     {
@@ -164,8 +144,7 @@ where
         let minor_version = buff.read_u16::<BigEndian>()?;
         let major_version = buff.read_u16::<BigEndian>()?;
         let constant_pool_count = buff.read_u16::<BigEndian>()?;
-        let mut constant_pool: Vec<ConstantPoolTag> =
-            Vec::with_capacity(constant_pool_count as usize);
+        let mut constant_pool: Vec<ConstantPoolTag> = Vec::with_capacity(constant_pool_count as usize);
         constant_pool.push(CONTINUATION_TAG);
         let mut read_bytes = buff.stream_position().unwrap_or(10);
 
@@ -190,9 +169,7 @@ where
                         }
                         _ => constant_pool.push(tag),
                     };
-                    read_bytes = buff
-                        .stream_position()
-                        .expect("error while fetching buffer position");
+                    read_bytes = buff.stream_position().expect("error while fetching buffer position");
                 }
                 Err(err) => {
                     println!(
@@ -207,64 +184,35 @@ where
 
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
-            println!(
-                "    Reading class access flags at {} (0x{:x})",
-                read_bytes, read_bytes
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
+            println!("    Reading class access flags at {} (0x{:x})", read_bytes, read_bytes);
         }
-        let access_flags =
-            AccessFlags::from((AccessFlagContext::Class, buff.read_u16::<BigEndian>()?));
+        let access_flags = AccessFlags::from((AccessFlagContext::Class, buff.read_u16::<BigEndian>()?));
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
-            println!(
-                "    Reading this class at {} (0x{:x})",
-                read_bytes, read_bytes
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
+            println!("    Reading this class at {} (0x{:x})", read_bytes, read_bytes);
         }
         let this_class = buff.read_u16::<BigEndian>()?;
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
-            println!(
-                "    Reading super class at {} (0x{:x})",
-                read_bytes, read_bytes
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
+            println!("    Reading super class at {} (0x{:x})", read_bytes, read_bytes);
         }
         let super_class = buff.read_u16::<BigEndian>()?;
 
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
-            println!(
-                "    Reading interfaces at {} (0x{:x})",
-                read_bytes, read_bytes
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
+            println!("    Reading interfaces at {} (0x{:x})", read_bytes, read_bytes);
         }
         let interfaces_count = buff.read_u16::<BigEndian>()?;
         let mut interfaces: Vec<type_alias::u2> = Vec::with_capacity(interfaces_count as usize);
@@ -274,13 +222,9 @@ where
 
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
             println!("    Reading fields at {} (0x{:x})", read_bytes, read_bytes);
         }
         let fields_count = buff.read_u16::<BigEndian>()?;
@@ -291,13 +235,9 @@ where
 
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
             println!("    Reading methods at {} (0x{:x})", read_bytes, read_bytes);
         }
         let methods_count = buff.read_u16::<BigEndian>()?;
@@ -308,21 +248,13 @@ where
 
         #[cfg(feature = "debug-logging")]
         {
-            let read_bytes = buff.stream_position().expect(
-                format!(
-                    "unexpected EOF after, previous success position: {}",
-                    read_bytes
-                )
-                .as_str(),
-            );
-            println!(
-                "    Reading attributes at {} (0x{:x})",
-                read_bytes, read_bytes
-            );
+            let read_bytes = buff
+                .stream_position()
+                .expect(format!("unexpected EOF after, previous success position: {}", read_bytes).as_str());
+            println!("    Reading attributes at {} (0x{:x})", read_bytes, read_bytes);
         }
         let attributes_count = buff.read_u16::<BigEndian>()?;
-        let attributes: Vec<Attribute> =
-            Self::read_attributes_vec(attributes_count, &constant_pool, &mut buff);
+        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, &constant_pool, &mut buff);
 
         let len = buff.stream_position().unwrap_or(0);
         #[cfg(feature = "debug-logging")]
@@ -363,10 +295,7 @@ where
     ///```
     /// Oracle docs: https://docs.oracle.com/javase/specs/jvms/se22/html/jvms-4.html#jvms-4.5
     ///
-    fn read_field<R>(
-        constant_pool: &Vec<ConstantPoolTag>,
-        buff: &mut BufReader<R>,
-    ) -> Result<Field, Error>
+    fn read_field<R>(constant_pool: &Vec<ConstantPoolTag>, buff: &mut BufReader<R>) -> Result<Field, Error>
     where
         R: Read + Seek,
     {
@@ -378,8 +307,7 @@ where
         {
             println!("    Reading field attributes");
         }
-        let attributes: Vec<Attribute> =
-            Self::read_attributes_vec(attributes_count, &constant_pool, buff);
+        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, &constant_pool, buff);
 
         Ok(Field {
             access_flags,
@@ -401,10 +329,7 @@ where
     ///```
     /// Oracle docs: https://docs.oracle.com/javase/specs/jvms/se22/html/jvms-4.html#jvms-4.6
     ///
-    fn read_method<R>(
-        constant_pool: &Vec<ConstantPoolTag>,
-        buff: &mut BufReader<R>,
-    ) -> Result<Method, Error>
+    fn read_method<R>(constant_pool: &Vec<ConstantPoolTag>, buff: &mut BufReader<R>) -> Result<Method, Error>
     where
         R: Read + Seek,
     {
@@ -417,8 +342,7 @@ where
             println!("    Reading method #{} (0x{:x})", name_index, name_index);
             println!("    Reading method attributes");
         }
-        let attributes: Vec<Attribute> =
-            Self::read_attributes_vec(attributes_count, &constant_pool, buff);
+        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, &constant_pool, buff);
 
         Ok(Method {
             access_flags,
@@ -429,10 +353,7 @@ where
         })
     }
 
-    fn read_stack_frames_vec<R>(
-        count: type_alias::u2,
-        buff: &mut BufReader<R>,
-    ) -> Vec<StackMapFrame>
+    fn read_stack_frames_vec<R>(count: type_alias::u2, buff: &mut BufReader<R>) -> Vec<StackMapFrame>
     where
         R: Read + Seek,
     {
@@ -527,9 +448,12 @@ where
             }
             _ => {
                 return Err(Error::new(
-                        ErrorKind::InvalidInput,
-                        format!("frame_type {} is reserved for future use, is your classfile correct or library up to date?", frame_type))
-                    );
+                    ErrorKind::InvalidInput,
+                    format!(
+                        "frame_type {} is reserved for future use, is your classfile correct or library up to date?",
+                        frame_type
+                    ),
+                ));
             }
         })
     }
@@ -555,27 +479,18 @@ where
     ///
     /// Oracle docs: https://docs.oracle.com/javase/specs/jvms/se22/html/jvms-4.html#jvms-4.7
     ///
-    fn read_attribute<R>(
-        constant_pool: &Vec<ConstantPoolTag>,
-        buff: &mut BufReader<R>,
-    ) -> Result<Attribute, Error>
+    fn read_attribute<R>(constant_pool: &Vec<ConstantPoolTag>, buff: &mut BufReader<R>) -> Result<Attribute, Error>
     where
         R: Read + Seek,
     {
         #[cfg(feature = "debug-logging")]
         {
-            println!(
-                "    Reading attribute name index at 0x{:x}",
-                buff.stream_position()?
-            );
+            println!("    Reading attribute name index at 0x{:x}", buff.stream_position()?);
         }
         let attribute_name_index = buff.read_u16::<BigEndian>()?;
         #[cfg(feature = "debug-logging")]
         {
-            println!(
-                "    Reading attribute length at 0x{:x}",
-                buff.stream_position()?
-            );
+            println!("    Reading attribute length at 0x{:x}", buff.stream_position()?);
         }
         let attribute_length = buff.read_u32::<BigEndian>()?;
 
@@ -593,10 +508,7 @@ where
             None => {
                 return Err(Error::new(
                     ErrorKind::NotFound,
-                    format!(
-                        "nothing found at index {} in constant pool",
-                        attribute_name_index
-                    ),
+                    format!("nothing found at index {} in constant pool", attribute_name_index),
                 ))
             }
         };
@@ -639,8 +551,7 @@ where
                     });
                 }
                 let attributes_count = buff.read_u16::<BigEndian>()?;
-                let attributes: Vec<Attribute> =
-                    Self::read_attributes_vec(attributes_count, constant_pool, buff);
+                let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, constant_pool, buff);
 
                 Ok(Attribute::Code {
                     attribute_name_index,
@@ -665,8 +576,7 @@ where
                 {
                     println!("    Found {} entries", number_of_entries);
                 }
-                let entries: Vec<StackMapFrame> =
-                    Self::read_stack_frames_vec(number_of_entries, buff);
+                let entries: Vec<StackMapFrame> = Self::read_stack_frames_vec(number_of_entries, buff);
 
                 Ok(Attribute::StackMapTable {
                     attribute_name_index,
@@ -722,8 +632,7 @@ where
                     println!("    Reading NestMembers attribute");
                 }
                 let number_of_classes = buff.read_u16::<BigEndian>()?;
-                let mut classes: Vec<type_alias::u2> =
-                    Vec::with_capacity(number_of_classes as usize);
+                let mut classes: Vec<type_alias::u2> = Vec::with_capacity(number_of_classes as usize);
                 for _ in 0..number_of_classes {
                     classes.push(buff.read_u16::<BigEndian>()?);
                 }
@@ -741,8 +650,7 @@ where
                     println!("    Reading PermittedSubclasses attribute");
                 }
                 let number_of_classes = buff.read_u16::<BigEndian>()?;
-                let mut classes: Vec<type_alias::u2> =
-                    Vec::with_capacity(number_of_classes as usize);
+                let mut classes: Vec<type_alias::u2> = Vec::with_capacity(number_of_classes as usize);
                 for _ in 0..number_of_classes {
                     classes.push(buff.read_u16::<BigEndian>()?);
                 }
@@ -762,8 +670,7 @@ where
                     println!("    Reading Exceptions attribute");
                 }
                 let number_of_exceptions = buff.read_u16::<BigEndian>()?;
-                let mut exception_index_table: Vec<type_alias::u2> =
-                    Vec::with_capacity(number_of_exceptions as usize);
+                let mut exception_index_table: Vec<type_alias::u2> = Vec::with_capacity(number_of_exceptions as usize);
                 for _ in 0..number_of_exceptions {
                     exception_index_table.push(buff.read_u16::<BigEndian>()?);
                 }
@@ -781,8 +688,7 @@ where
                     println!("    Reading InnerClasses attribute");
                 }
                 let number_of_classes = buff.read_u16::<BigEndian>()?;
-                let mut classes: Vec<InnerClassEntry> =
-                    Vec::with_capacity(number_of_classes as usize);
+                let mut classes: Vec<InnerClassEntry> = Vec::with_capacity(number_of_classes as usize);
                 for _ in 0..number_of_classes {
                     classes.push(InnerClassEntry {
                         inner_class_info_index: buff.read_u16::<BigEndian>()?,
@@ -838,8 +744,7 @@ where
                     println!("    Reading Record attribute");
                 }
                 let components_count = buff.read_u16::<BigEndian>()?;
-                let mut components: Vec<RecordComponentInfo> =
-                    Vec::with_capacity(components_count as usize);
+                let mut components: Vec<RecordComponentInfo> = Vec::with_capacity(components_count as usize);
                 for _ in 0..components_count {
                     let name_index = buff.read_u16::<BigEndian>()?;
                     let descriptor_index = buff.read_u16::<BigEndian>()?;
@@ -848,11 +753,7 @@ where
                         name_index,
                         descriptor_index,
                         attributes_count,
-                        attributes: Self::read_attributes_vec(
-                            attributes_count,
-                            constant_pool,
-                            buff,
-                        ),
+                        attributes: Self::read_attributes_vec(attributes_count, constant_pool, buff),
                     });
                 }
 
@@ -880,8 +781,7 @@ where
                     println!("    Reading LineNumberTable attribute");
                 }
                 let line_number_table_length = buff.read_u16::<BigEndian>()?;
-                let mut line_number_table: Vec<LineNumberEntry> =
-                    Vec::with_capacity(line_number_table_length as usize);
+                let mut line_number_table: Vec<LineNumberEntry> = Vec::with_capacity(line_number_table_length as usize);
                 for _ in 0..line_number_table_length {
                     line_number_table.push(LineNumberEntry {
                         start_pc: buff.read_u16::<BigEndian>()?,
@@ -955,8 +855,7 @@ where
                 {
                     println!("    Reading SourceDebugExtension attribute");
                 }
-                let mut debug_extension_bytes: Vec<type_alias::u1> =
-                    vec![0u8; attribute_length as usize];
+                let mut debug_extension_bytes: Vec<type_alias::u1> = vec![0u8; attribute_length as usize];
                 buff.read_exact(&mut *debug_extension_bytes)?;
                 let debug_extension = match read_modified_utf8(&debug_extension_bytes.as_ref()) {
                     Ok(res) => res,
@@ -1017,8 +916,7 @@ where
                     println!("    Reading RuntimeVisibleParameterAnnotations or RuntimeInvisibleParameterAnnotations attribute");
                 }
                 let num_parameters = buff.read_u8()?;
-                let mut parameter_annotations: Vec<ParameterAnnotation> =
-                    Vec::with_capacity(num_parameters as usize);
+                let mut parameter_annotations: Vec<ParameterAnnotation> = Vec::with_capacity(num_parameters as usize);
                 for _ in 0..num_parameters {
                     let num_annotations = buff.read_u16::<BigEndian>()?;
                     let annotations = Self::read_annotations_vec(num_annotations, buff)?;
@@ -1029,22 +927,18 @@ where
                 }
 
                 Ok(match attribute_name {
-                    "RuntimeVisibleParameterAnnotations" => {
-                        Attribute::RuntimeVisibleParameterAnnotations {
-                            attribute_name_index,
-                            attribute_length,
-                            num_parameters,
-                            parameter_annotations,
-                        }
-                    }
-                    "RuntimeInvisibleParameterAnnotations" => {
-                        Attribute::RuntimeInvisibleParameterAnnotations {
-                            attribute_name_index,
-                            attribute_length,
-                            num_parameters,
-                            parameter_annotations,
-                        }
-                    }
+                    "RuntimeVisibleParameterAnnotations" => Attribute::RuntimeVisibleParameterAnnotations {
+                        attribute_name_index,
+                        attribute_length,
+                        num_parameters,
+                        parameter_annotations,
+                    },
+                    "RuntimeInvisibleParameterAnnotations" => Attribute::RuntimeInvisibleParameterAnnotations {
+                        attribute_name_index,
+                        attribute_length,
+                        num_parameters,
+                        parameter_annotations,
+                    },
                     _ => unreachable!(),
                 })
             }
@@ -1054,8 +948,7 @@ where
                     println!("    Reading RuntimeVisibleTypeAnnotations or RuntimeInvisibleTypeAnnotations attribute");
                 }
                 let num_parameters = buff.read_u16::<BigEndian>()?;
-                let mut annotations: Vec<TypeAnnotation> =
-                    Vec::with_capacity(num_parameters as usize);
+                let mut annotations: Vec<TypeAnnotation> = Vec::with_capacity(num_parameters as usize);
                 for _ in 0..num_parameters {
                     let target_type: type_alias::u1 = buff.read_u8()?;
                     let target_info = match target_type {
@@ -1078,8 +971,7 @@ where
                         },
                         0x40 | 0x41 => {
                             let table_length = buff.read_u16::<BigEndian>()?;
-                            let mut table: Vec<LocalvarTargetTableEntry> =
-                                Vec::with_capacity(table_length as usize);
+                            let mut table: Vec<LocalvarTargetTableEntry> = Vec::with_capacity(table_length as usize);
                             for _ in 0..table_length {
                                 table.push(LocalvarTargetTableEntry {
                                     start_pc: buff.read_u16::<BigEndian>()?,
@@ -1087,10 +979,7 @@ where
                                     index: buff.read_u16::<BigEndian>()?,
                                 });
                             }
-                            TargetInfo::LocalvarTarget {
-                                table_length,
-                                table,
-                            }
+                            TargetInfo::LocalvarTarget { table_length, table }
                         }
                         0x42 => TargetInfo::CatchTarget {
                             exception_table_index: buff.read_u16::<BigEndian>()?,
@@ -1117,10 +1006,8 @@ where
                     };
                     let type_index = buff.read_u16::<BigEndian>()?;
                     let num_element_value_pairs = buff.read_u16::<BigEndian>()?;
-                    let element_value_pairs = Self::read_annotations_element_value_pairs_vec(
-                        num_element_value_pairs,
-                        buff,
-                    )?;
+                    let element_value_pairs =
+                        Self::read_annotations_element_value_pairs_vec(num_element_value_pairs, buff)?;
 
                     annotations.push(TypeAnnotation {
                         target_type,
@@ -1139,14 +1026,12 @@ where
                         num_parameters,
                         annotations,
                     },
-                    "RuntimeInvisibleTypeAnnotations" => {
-                        Attribute::RuntimeInvisibleTypeAnnotations {
-                            attribute_name_index,
-                            attribute_length,
-                            num_parameters,
-                            annotations,
-                        }
-                    }
+                    "RuntimeInvisibleTypeAnnotations" => Attribute::RuntimeInvisibleTypeAnnotations {
+                        attribute_name_index,
+                        attribute_length,
+                        num_parameters,
+                        annotations,
+                    },
                     _ => unreachable!(),
                 })
             }
@@ -1171,10 +1056,7 @@ where
                 for _ in 0..parameters_count {
                     parameters.push(Parameter {
                         name_index: buff.read_u16::<BigEndian>()?,
-                        access_flags: AccessFlags::from((
-                            AccessFlagContext::Module,
-                            buff.read_u16::<BigEndian>()?,
-                        )),
+                        access_flags: AccessFlags::from((AccessFlagContext::Module, buff.read_u16::<BigEndian>()?)),
                     });
                 }
 
@@ -1274,8 +1156,7 @@ where
                     println!("    Reading ModulePackages attribute");
                 }
                 let package_count = buff.read_u16::<BigEndian>()?;
-                let mut package_index: Vec<type_alias::u2> =
-                    Vec::with_capacity(package_count as usize);
+                let mut package_index: Vec<type_alias::u2> = Vec::with_capacity(package_count as usize);
                 for _ in 0..package_count {
                     package_index.push(buff.read_u16::<BigEndian>()?);
                 }
@@ -1336,8 +1217,7 @@ where
     where
         R: Read + Seek,
     {
-        let mut element_value_pairs: Vec<ElementValuePair> =
-            Vec::with_capacity(num_element_value_pairs as usize);
+        let mut element_value_pairs: Vec<ElementValuePair> = Vec::with_capacity(num_element_value_pairs as usize);
 
         for _ in 0..num_element_value_pairs {
             let element_name_index = buff.read_u16::<BigEndian>()?;
@@ -1470,10 +1350,7 @@ where
                 let mut _value = match read_modified_utf8(&bytes) {
                     Ok(res) => res,
                     Err(err) => {
-                        println!(
-                            "unable to read bytes string into utf8 string: {:?}, err={}",
-                            bytes, err
-                        );
+                        println!("unable to read bytes string into utf8 string: {:?}, err={}", bytes, err);
                         value_read_correctly = false;
                         String::new()
                     }
@@ -1576,9 +1453,7 @@ where
                 })
             }
 
-            ConstantPoolJvmTag::Fieldref
-            | ConstantPoolJvmTag::Methodref
-            | ConstantPoolJvmTag::InterfaceMethodref => {
+            ConstantPoolJvmTag::Fieldref | ConstantPoolJvmTag::Methodref | ConstantPoolJvmTag::InterfaceMethodref => {
                 let class_index = buff.read_u16::<BigEndian>()?;
                 let name_and_type_index = buff.read_u16::<BigEndian>()?;
 

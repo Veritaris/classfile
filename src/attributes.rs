@@ -125,7 +125,7 @@ impl BootstrapMethodEntry {
     pub unsafe fn write(self, buff: &mut Vec<u8>) -> Result<(), Error> {
         buff.write_u16::<BigEndian>(self.bootstrap_method_ref)?;
         buff.write_u16::<BigEndian>(self.num_bootstrap_arguments)?;
-        buff.write(
+        let _ = buff.write(
             self.bootstrap_arguments
                 .iter()
                 .map(|e| e.to_be())
@@ -288,21 +288,21 @@ impl ElementValue {
 ///     } array_value;
 /// } value;
 ///```
-/// | tag Item  | Type	                | value Item            | Constant Type     |
+/// | tag Item  | Type                  | value Item            | Constant Type     |
 /// |-----------|-----------------------|-----------------------|-------------------|
-/// | B	        | byte	                | const_value_index     | CONSTANT_Integer  |
-/// | C	        | char	                | const_value_index     | CONSTANT_Integer  |
-/// | D	        | double	            | const_value_index     | CONSTANT_Double   |
-/// | F	        | float	                | const_value_index     | CONSTANT_Float    |
-/// | I	        | int	                | const_value_index     | CONSTANT_Integer  |
-/// | J	        | long	                | const_value_index     | CONSTANT_Long     |
-/// | S	        | short	                | const_value_index     | CONSTANT_Integer  |
-/// | Z	        | boolean	            | const_value_index     | CONSTANT_Integer  |
-/// | s	        | String	            | const_value_index     | CONSTANT_Utf8     |
-/// | e	        | Enum class  	        | enum_const_value      | Not applicable    |
-/// | c	        | Class	                | class_info_index      | Not applicable    |
-/// | @	        | Annotation interface	| annotation_value      | Not applicable    |
-/// | [	        | Array type  	        | array_value           | Not applicable    |
+/// | B         | byte                  | const_value_index     | CONSTANT_Integer  |
+/// | C         | char                  | const_value_index     | CONSTANT_Integer  |
+/// | D         | double                | const_value_index     | CONSTANT_Double   |
+/// | F         | float                 | const_value_index     | CONSTANT_Float    |
+/// | I         | int                   | const_value_index     | CONSTANT_Integer  |
+/// | J         | long                  | const_value_index     | CONSTANT_Long     |
+/// | S         | short                 | const_value_index     | CONSTANT_Integer  |
+/// | Z         | boolean               | const_value_index     | CONSTANT_Integer  |
+/// | s         | String                | const_value_index     | CONSTANT_Utf8     |
+/// | e         | Enum class            | enum_const_value      | Not applicable    |
+/// | c         | Class                 | class_info_index      | Not applicable    |
+/// | @         | Annotation interface  | annotation_value      | Not applicable    |
+/// | [         | Array type            | array_value           | Not applicable    |
 #[derive(Clone, Debug)]
 pub enum Value {
     ConstValueIndex {
@@ -543,12 +543,8 @@ pub enum TargetInfo {
 impl TargetInfo {
     pub fn write(self, buff: &mut Vec<u8>) -> Result<(), Error> {
         match self {
-            TargetInfo::TypeParameterTarget {
-                type_parameter_index,
-            } => buff.write_u8(type_parameter_index)?,
-            TargetInfo::SupertypeTarget { supertype_index } => {
-                buff.write_u16::<BigEndian>(supertype_index)?
-            }
+            TargetInfo::TypeParameterTarget { type_parameter_index } => buff.write_u8(type_parameter_index)?,
+            TargetInfo::SupertypeTarget { supertype_index } => buff.write_u16::<BigEndian>(supertype_index)?,
             TargetInfo::TypeParameterBoundTarget {
                 type_parameter_index,
                 bound_index,
@@ -557,24 +553,15 @@ impl TargetInfo {
                 buff.write_u8(bound_index)?;
             }
             TargetInfo::EmptyTarget {} => {}
-            TargetInfo::FormalParameterTarget {
-                formal_parameter_index,
-            } => buff.write_u8(formal_parameter_index)?,
-            TargetInfo::ThrowsTarget { throws_type_index } => {
-                buff.write_u16::<BigEndian>(throws_type_index)?
-            }
-            TargetInfo::LocalvarTarget {
-                table_length,
-                table,
-            } => {
+            TargetInfo::FormalParameterTarget { formal_parameter_index } => buff.write_u8(formal_parameter_index)?,
+            TargetInfo::ThrowsTarget { throws_type_index } => buff.write_u16::<BigEndian>(throws_type_index)?,
+            TargetInfo::LocalvarTarget { table_length, table } => {
                 buff.write_u16::<BigEndian>(table_length)?;
                 for entry in table {
                     entry.write(buff)?;
                 }
             }
-            TargetInfo::CatchTarget {
-                exception_table_index,
-            } => buff.write_u16::<BigEndian>(exception_table_index)?,
+            TargetInfo::CatchTarget { exception_table_index } => buff.write_u16::<BigEndian>(exception_table_index)?,
             TargetInfo::OffsetTarget { offset } => buff.write_u16::<BigEndian>(offset)?,
             TargetInfo::TypeArgumentTarget {
                 offset,
@@ -788,9 +775,7 @@ impl VerificationTypeInfo {
             VerificationTypeInfo::DoubleVariableInfo { tag } => buff.write_u8(tag as u8)?,
             VerificationTypeInfo::LongVariableInfo { tag } => buff.write_u8(tag as u8)?,
             VerificationTypeInfo::NullVariableInfo { tag } => buff.write_u8(tag as u8)?,
-            VerificationTypeInfo::UninitializedThisVariableInfo { tag } => {
-                buff.write_u8(tag as u8)?
-            }
+            VerificationTypeInfo::UninitializedThisVariableInfo { tag } => buff.write_u8(tag as u8)?,
             VerificationTypeInfo::ObjectVariableInfo { tag, cpool_index } => {
                 buff.write_u8(tag as u8)?;
                 buff.write_u16::<BigEndian>(cpool_index)?;
@@ -854,13 +839,9 @@ where
         let tag = VerificationTypeInfoItem::try_from(buff.read_u8()?)?;
         Ok(match tag {
             VerificationTypeInfoItem::ItemTop => VerificationTypeInfo::TopVariableInfo { tag },
-            VerificationTypeInfoItem::ItemInteger => {
-                VerificationTypeInfo::IntegerVariableInfo { tag }
-            }
+            VerificationTypeInfoItem::ItemInteger => VerificationTypeInfo::IntegerVariableInfo { tag },
             VerificationTypeInfoItem::ItemFloat => VerificationTypeInfo::FloatVariableInfo { tag },
-            VerificationTypeInfoItem::ItemDouble => {
-                VerificationTypeInfo::DoubleVariableInfo { tag }
-            }
+            VerificationTypeInfoItem::ItemDouble => VerificationTypeInfo::DoubleVariableInfo { tag },
             VerificationTypeInfoItem::ItemLong => VerificationTypeInfo::LongVariableInfo { tag },
             VerificationTypeInfoItem::ItemNull => VerificationTypeInfo::NullVariableInfo { tag },
             VerificationTypeInfoItem::ItemUninitializedThis => {
@@ -870,12 +851,10 @@ where
                 tag,
                 cpool_index: buff.read_u16::<BigEndian>()?,
             },
-            VerificationTypeInfoItem::ItemUninitialized => {
-                VerificationTypeInfo::UninitializedVariableInfo {
-                    tag,
-                    offset: buff.read_u16::<BigEndian>()?,
-                }
-            }
+            VerificationTypeInfoItem::ItemUninitialized => VerificationTypeInfo::UninitializedVariableInfo {
+                tag,
+                offset: buff.read_u16::<BigEndian>()?,
+            },
         })
     }
 }
@@ -1250,7 +1229,7 @@ impl Attribute {
                 buff.write_u16::<BigEndian>(max_stack)?;
                 buff.write_u16::<BigEndian>(max_locals)?;
                 buff.write_u32::<BigEndian>(code_length)?;
-                buff.write(code.as_slice())?;
+                let _ = buff.write(code.as_slice())?;
                 buff.write_u16::<BigEndian>(exception_table_length)?;
                 for entry in exception_table {
                     entry.write(buff)?
@@ -1282,7 +1261,7 @@ impl Attribute {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
                 buff.write_u16::<BigEndian>(number_of_exceptions)?;
-                buff.write(
+                let _ = buff.write(
                     exception_index_table
                         .iter()
                         .map(|e| e.to_be())
@@ -1347,7 +1326,7 @@ impl Attribute {
             } => {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
-                buff.write(debug_extension.as_bytes())?;
+                let _ = buff.write(debug_extension.as_bytes())?;
             }
             Attribute::LineNumberTable {
                 attribute_name_index,
@@ -1547,7 +1526,7 @@ impl Attribute {
                 }
 
                 buff.write_u16::<BigEndian>(uses_count)?;
-                buff.write(
+                let _ = buff.write(
                     uses_index
                         .iter()
                         .map(|e| e.to_be())
@@ -1570,7 +1549,7 @@ impl Attribute {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
                 buff.write_u16::<BigEndian>(package_count)?;
-                buff.write(
+                let _ = buff.write(
                     package_index
                         .iter()
                         .map(|e| e.to_be())
@@ -1606,7 +1585,7 @@ impl Attribute {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
                 buff.write_u16::<BigEndian>(number_of_classes)?;
-                buff.write(
+                let _ = buff.write(
                     classes
                         .iter()
                         .map(|e| e.to_be())
@@ -1637,7 +1616,7 @@ impl Attribute {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
                 buff.write_u16::<BigEndian>(number_of_classes)?;
-                buff.write(
+                let _ = buff.write(
                     classes
                         .iter()
                         .map(|e| e.to_be())
@@ -1653,7 +1632,7 @@ impl Attribute {
             } => {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
-                buff.write(&*data)?;
+                let _ = buff.write(&data)?;
             }
         }
         Ok(())

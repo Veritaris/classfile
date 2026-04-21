@@ -21,7 +21,7 @@ impl ClassFile {
                 .compression_level(Some(compress_level)),
         )?;
         let data: Vec<u8> = self.try_into()?;
-        writer.write(data.as_slice())?;
+        let _ = writer.write(data.as_slice())?;
         Ok(())
     }
 }
@@ -38,7 +38,7 @@ impl<'a> TryInto<Vec<u8>> for ClassFile {
 
         for entry in self.constant_pool {
             let bytes: Vec<u8> = entry.try_into()?;
-            output.write(bytes.as_slice())?;
+            let _ = output.write(bytes.as_slice())?;
         }
 
         output.write_u16::<BigEndian>(self.access_flags.into())?;
