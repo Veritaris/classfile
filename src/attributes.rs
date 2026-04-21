@@ -122,17 +122,19 @@ pub struct BootstrapMethodEntry {
 }
 
 impl BootstrapMethodEntry {
-    pub unsafe fn write(self, buff: &mut Vec<u8>) -> Result<(), Error> {
+    pub fn write(self, buff: &mut Vec<u8>) -> Result<(), Error> {
         buff.write_u16::<BigEndian>(self.bootstrap_method_ref)?;
         buff.write_u16::<BigEndian>(self.num_bootstrap_arguments)?;
-        let _ = buff.write(
-            self.bootstrap_arguments
-                .iter()
-                .map(|e| e.to_be())
-                .collect::<Vec<type_alias::u2>>()
-                .align_to::<u8>()
-                .1,
-        )?;
+        unsafe {
+            let _ = buff.write(
+                self.bootstrap_arguments
+                    .iter()
+                    .map(|e| e.to_be())
+                    .collect::<Vec<type_alias::u2>>()
+                    .align_to::<u8>()
+                    .1,
+            )?;
+        }
         Ok(())
     }
 }
@@ -638,7 +640,7 @@ impl LocalvarTargetTableEntry {
 ///     } provides[provides_count];
 /// }
 ///```
-
+///
 ///```javadoc
 /// {   type_alias::u2 start_pc;
 ///     type_alias::u2 length;
@@ -1466,14 +1468,14 @@ impl Attribute {
                 attribute_length,
                 num_bootstrap_methods,
                 bootstrap_methods,
-            } => unsafe {
+            } => {
                 buff.write_u16::<BigEndian>(attribute_name_index)?;
                 buff.write_u32::<BigEndian>(attribute_length)?;
                 buff.write_u16::<BigEndian>(num_bootstrap_methods)?;
                 for one_method in bootstrap_methods {
                     one_method.write(buff)?;
                 }
-            },
+            }
             Attribute::MethodParameters {
                 attribute_name_index,
                 attribute_length,

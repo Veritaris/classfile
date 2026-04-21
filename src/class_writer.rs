@@ -26,7 +26,7 @@ impl ClassFile {
     }
 }
 
-impl<'a> TryInto<Vec<u8>> for ClassFile {
+impl TryInto<Vec<u8>> for ClassFile {
     type Error = Error;
 
     fn try_into(self) -> Result<Vec<u8>, Self::Error> {

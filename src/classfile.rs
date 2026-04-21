@@ -10,24 +10,26 @@ use indoc::indoc;
 
 pub const CLASS_HEADER: u32 = 0xCAFEBABE;
 
-// ClassFile {
-//     type_alias::u4             magic;
-//     type_alias::u2             minor_version;
-//     type_alias::u2             major_version;
-//     type_alias::u2             constant_pool_count;
-//     cp_info        constant_pool[constant_pool_count-1];
-//     type_alias::u2             access_flags;
-//     type_alias::u2             this_class;
-//     type_alias::u2             super_class;
-//     type_alias::u2             interfaces_count;
-//     type_alias::u2             interfaces[interfaces_count];
-//     type_alias::u2             fields_count;
-//     field_info     fields[fields_count];
-//     type_alias::u2             methods_count;
-//     method_info    methods[methods_count];
-//     type_alias::u2             attributes_count;
-//     attribute_info attributes[attributes_count];
-// }
+/// ```javadoc
+/// ClassFile {
+///     type_alias::u4              magic;
+///     type_alias::u2              minor_version;
+///     type_alias::u2              major_version;
+///     type_alias::u2              constant_pool_count;
+///     cp_info                     constant_pool[constant_pool_count-1];
+///     type_alias::u2              access_flags;
+///     type_alias::u2              this_class;
+///     type_alias::u2              super_class;
+///     type_alias::u2              interfaces_count;
+///     type_alias::u2              interfaces[interfaces_count];
+///     type_alias::u2              fields_count;
+///     field_info                  fields[fields_count];
+///     type_alias::u2              methods_count;
+///     method_info                 methods[methods_count];
+///     type_alias::u2              attributes_count;
+///     attribute_info              attributes[attributes_count];
+/// }
+/// ```
 pub struct ClassFile {
     pub magic: type_alias::u4,
     pub minor_version: type_alias::u2,

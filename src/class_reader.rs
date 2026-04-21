@@ -11,14 +11,11 @@ use crate::method::Method;
 use crate::mutf8::read_modified_utf8;
 use crate::type_alias;
 
-impl<'a, 'b> ClassFile
-where
-    'b: 'a,
-{
+impl ClassFile {
     pub fn tag_to_display(&self, tag: &ConstantPoolTag) -> String {
         match tag {
             ConstantPoolTag::Utf8 { bytes, length, .. } => {
-                let bytes_stringified = match read_modified_utf8(&bytes) {
+                let bytes_stringified = match read_modified_utf8(bytes) {
                     Ok(res) => res,
                     Err(err) => {
                         eprintln!("[TagDisplayError]: err={}, raw data: {:?}", err, bytes);
@@ -307,7 +304,7 @@ where
         {
             println!("    Reading field attributes");
         }
-        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, &constant_pool, buff);
+        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, constant_pool, buff);
 
         Ok(Field {
             access_flags,
@@ -342,7 +339,7 @@ where
             println!("    Reading method #{} (0x{:x})", name_index, name_index);
             println!("    Reading method attributes");
         }
-        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, &constant_pool, buff);
+        let attributes: Vec<Attribute> = Self::read_attributes_vec(attributes_count, constant_pool, buff);
 
         Ok(Method {
             access_flags,
@@ -539,7 +536,7 @@ where
                 let max_locals = buff.read_u16::<BigEndian>()?;
                 let code_length = buff.read_u32::<BigEndian>()?;
                 let mut code: Vec<type_alias::u1> = vec![0u8; code_length as usize];
-                buff.read_exact(&mut *code)?;
+                buff.read_exact(&mut code)?;
                 let exception_table_length = buff.read_u16::<BigEndian>()?;
                 let mut exception_table: Vec<ExceptionTableEntry> = vec![];
                 for _ in 0..exception_table_length {
@@ -856,8 +853,8 @@ where
                     println!("    Reading SourceDebugExtension attribute");
                 }
                 let mut debug_extension_bytes: Vec<type_alias::u1> = vec![0u8; attribute_length as usize];
-                buff.read_exact(&mut *debug_extension_bytes)?;
-                let debug_extension = match read_modified_utf8(&debug_extension_bytes.as_ref()) {
+                buff.read_exact(&mut debug_extension_bytes)?;
+                let debug_extension = match read_modified_utf8(debug_extension_bytes.as_ref()) {
                     Ok(res) => res,
                     Err(err) => {
                         return Err(Error::new(
@@ -962,6 +959,7 @@ where
                             type_parameter_index: buff.read_u8()?,
                             bound_index: buff.read_u8()?,
                         },
+                        #[allow(clippy::manual_range_patterns)]
                         0x13 | 0x14 | 0x15 => TargetInfo::EmptyTarget {},
                         0x16 => TargetInfo::FormalParameterTarget {
                             formal_parameter_index: buff.read_u8()?,
@@ -984,9 +982,11 @@ where
                         0x42 => TargetInfo::CatchTarget {
                             exception_table_index: buff.read_u16::<BigEndian>()?,
                         },
+                        #[allow(clippy::manual_range_patterns)]
                         0x43 | 0x44 | 0x45 | 0x46 => TargetInfo::OffsetTarget {
                             offset: buff.read_u16::<BigEndian>()?,
                         },
+                        #[allow(clippy::manual_range_patterns)]
                         0x47 | 0x48 | 0x49 | 0x4A | 0x4B => TargetInfo::TypeArgumentTarget {
                             offset: buff.read_u16::<BigEndian>()?,
                             type_argument_index: buff.read_u8()?,
@@ -1345,7 +1345,7 @@ where
                 {
                     println!("reading {} bytes of string", length);
                 }
-                buff.read_exact(&mut *bytes)?;
+                buff.read_exact(&mut bytes)?;
                 let mut value_read_correctly = true;
                 let mut _value = match read_modified_utf8(&bytes) {
                     Ok(res) => res,

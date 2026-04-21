@@ -5,23 +5,26 @@ use std::io::{Error, Write};
 
 pub const CONTINUATION_TAG: ConstantPoolTag = ConstantPoolTag::ContinuationTag { tag: 0 };
 
-// Utf8	                    1	45.3	1.0.2
-// Integer	                3	45.3	1.0.2
-// Float	                4	45.3	1.0.2
-// Long	                    5	45.3	1.0.2
-// Double	                6	45.3	1.0.2
-// Class	                7	45.3	1.0.2
-// String	                8	45.3	1.0.2
-// Fieldref	                9	45.3	1.0.2
-// Methodref	            10	45.3	1.0.2
-// InterfaceMethodref	    11	45.3	1.0.2
-// NameAndType	            12	45.3	1.0.2
-// MethodHandle	            15	51.0	7
-// MethodType	            16	51.0	7
-// Dynamic	                17	55.0	11
-// InvokeDynamic	        18	51.0	7
-// Module	                19	53.0	9
-// Package	                20	53.0	9
+///```javadoc
+/// Utf8                        1   45.3    1.0.2
+/// Integer                     3   45.3    1.0.2
+/// Float                       4   45.3    1.0.2
+/// Long                        5   45.3    1.0.2
+/// Double                      6   45.3    1.0.2
+/// Class                       7   45.3    1.0.2
+/// String                      8   45.3    1.0.2
+/// Fieldref                    9   45.3    1.0.2
+/// Methodref                   10  45.3    1.0.2
+/// InterfaceMethodref          11  45.3    1.0.2
+/// NameAndType                 12  45.3    1.0.2
+/// MethodHandle                15  51.0    7
+/// MethodType                  16  51.0    7
+/// Dynamic                     17  55.0    11
+/// InvokeDynamic               18  51.0    7
+/// Module                      19  53.0    9
+/// Package                     20  53.0    9
+/// ```
+///
 #[derive(Debug, Clone)]
 pub enum ConstantPoolTag {
     ContinuationTag {
@@ -141,7 +144,7 @@ impl ConstantPoolTag {
         string: ConstantPoolTag,
         visited_entries: Option<Vec<type_alias::u2>>,
     ) -> String {
-        let visited_entries = visited_entries.unwrap_or(vec![]);
+        let visited_entries = visited_entries.unwrap_or_default();
         match string {
             ConstantPoolTag::Utf8 { _value, .. } => _value,
             ConstantPoolTag::String { string_index, .. } => {
@@ -380,12 +383,6 @@ pub enum ConstantPoolJvmTag {
     InvokeDynamic = 18,
     Module = 19,
     Package = 20,
-}
-
-impl Into<u8> for ConstantPoolJvmTag {
-    fn into(self) -> u8 {
-        self as u8
-    }
 }
 
 impl From<u8> for ConstantPoolJvmTag {
